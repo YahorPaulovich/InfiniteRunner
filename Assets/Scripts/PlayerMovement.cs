@@ -1,0 +1,73 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerMovement : MonoBehaviour
+{
+    [SerializeField] private Rigidbody2D _rigidbody2D;
+    [SerializeField] private Transform _groundCheck;
+    [SerializeField] private LayerMask _groundLayer;
+
+    private float _horizontal;
+    private float _speed = 8f;
+    private float _jumpingPower = 16f;
+    private bool _isFacingRight = true;
+
+    private void Update()
+    {
+        _rigidbody2D.velocity = new Vector2(_horizontal * _speed, _rigidbody2D.velocity.y);
+
+        if (!_isFacingRight && _horizontal > 0f)
+        {
+            Flip();
+        }
+        else if (_isFacingRight && _horizontal < 0f)
+        {
+            Flip();
+        }
+    }
+
+    public void Jump(InputAction.CallbackContext context)
+    {
+        if (context.performed && IsGrounded())
+        {
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _jumpingPower);
+        }
+        
+        if (context.canceled && _rigidbody2D.velocity.y > 0f)
+        {
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _rigidbody2D.velocity.y * 0.5f);
+        }
+    }
+
+    private bool IsGrounded()
+    {
+        return Physics2D.OverlapCircle(_groundCheck.position, 0.2f, _groundLayer);
+    }
+
+    private void Flip()
+    {
+        _isFacingRight = !_isFacingRight;
+        Vector3 localScale = transform.localScale;
+        localScale.x *= -1f;
+        transform.localScale = localScale;
+    }
+
+    public void Move(InputAction.CallbackContext context)
+    {
+        _horizontal = context.ReadValue<Vector2>().x;
+    }
+
+    private void OnApplicationFocus(bool focus) 
+    {
+        if (focus)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+}
