@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,14 +8,21 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _groundLayer;
 
     private float _horizontal;
-    private float _speed = 8f;
+    [SerializeField] private float _speed = 8f;
     private float _jumpingPower = 16f;
     private bool _isFacingRight = true;
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer.Equals("Spike"))
+        {
+            Debug.Log("Spike");
+        }
+    }
 
     private void Update()
     {
         _rigidbody2D.velocity = new Vector2(_horizontal * _speed, _rigidbody2D.velocity.y);
-
         if (!_isFacingRight && _horizontal > 0f)
         {
             Flip();
@@ -54,20 +59,14 @@ public class PlayerMovement : MonoBehaviour
         transform.localScale = localScale;
     }
 
-    public void Move(InputAction.CallbackContext context)
+    public void MovementDirection(InputAction.CallbackContext context)
     {
-        _horizontal = context.ReadValue<Vector2>().x;
+        _horizontal = Camera.main.ScreenToWorldPoint(context.ReadValue<Vector2>()).normalized.x;
     }
 
-    private void OnApplicationFocus(bool focus) 
+    public void Move(InputAction.CallbackContext context)
     {
-        if (focus)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-        }
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-        }
+        Debug.Log(context.ReadValue<Vector2>().normalized.x);
+        //_horizontal = context.ReadValue<Vector2>().normalized.x;
     }
 }
